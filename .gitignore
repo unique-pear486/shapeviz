@@ -1,3 +1,7 @@
+# pbiviz build artifacts
+webpack.statistics.*
+.tmp
+
 # Logs
 logs
 *.log

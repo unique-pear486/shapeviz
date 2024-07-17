@@ -1,1 +1,26 @@
-{"visual":{"name":"shapevizual","displayName":"shapevizual","guid":"shapevizual80549DFDC37343A59DCDA2354364DB46","visualClassName":"Visual","version":"1.0.0.0","description":"","supportUrl":"","gitHubUrl":""},"apiVersion":"5.3.0","author":{"name":"","email":""},"assets":{"icon":"assets/icon.png"},"externalJS":null,"style":"style/visual.less","capabilities":"capabilities.json","dependencies":null,"stringResources":[],"version":"1.0.0.0"}
+{
+    "visual": {
+        "name": "shapevizual",
+        "displayName": "shapevizual",
+        "guid": "shapevizual80549DFDC37343A59DCDA2354364DB46",
+        "visualClassName": "Visual",
+        "version": "1.0.0.0",
+        "description": "A demo visual showing how to create shapes",
+        "supportUrl": "https://github.com/unique-pear486/shapeviz",
+        "gitHubUrl": "https://github.com/unique-pear486/shapeviz"
+    },
+    "apiVersion": "5.3.0",
+    "author": {
+        "name": "unique-pear486",
+        "email": "unique-pear486@users.noreply.github.com"
+    },
+    "assets": {
+        "icon": "assets/icon.png"
+    },
+    "externalJS": null,
+    "style": "style/visual.less",
+    "capabilities": "capabilities.json",
+    "dependencies": null,
+    "stringResources": [],
+    "version": "1.0.0.0"
+}
