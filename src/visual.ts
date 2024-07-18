@@ -32,18 +32,28 @@ import "./../style/visual.less";
 import VisualConstructorOptions = powerbi.extensibility.visual.VisualConstructorOptions;
 import VisualUpdateOptions = powerbi.extensibility.visual.VisualUpdateOptions;
 import IVisual = powerbi.extensibility.visual.IVisual;
+import IVisualHost = powerbi.extensibility.visual.IVisualHost;
+import ISelectionId = powerbi.visuals.ISelectionId;
 
-import { VisualFormattingSettingsModel } from "./settings";
+import { ShapeChartSettingsModel } from "./settings";
+
+export interface ShapeChartCategory {
+    name: string;
+    color: string;
+    //selectionId: ISelectionId;
+}
 
 export class Visual implements IVisual {
+    private host: IVisualHost;
     private target: HTMLElement;
     private updateCount: number;
     private textNode: Text;
-    private formattingSettings: VisualFormattingSettingsModel;
+    private formattingSettings: ShapeChartSettingsModel;
     private formattingSettingsService: FormattingSettingsService;
 
     constructor(options: VisualConstructorOptions) {
         console.log('Visual constructor', options);
+        this.host = options.host;
         this.formattingSettingsService = new FormattingSettingsService();
         this.target = options.element;
         this.updateCount = 0;
@@ -59,7 +69,25 @@ export class Visual implements IVisual {
     }
 
     public update(options: VisualUpdateOptions) {
-        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(VisualFormattingSettingsModel, options.dataViews[0]);
+        this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(ShapeChartSettingsModel, options.dataViews[0]);
+        // Hard-coding this for now
+        this.formattingSettings.populateColorSelector([
+            {
+                name: "Category 1",
+                color: this.host.colorPalette.getColor("Category 1").value,
+                //selectionId: undefined
+            },
+            {
+                name: "Category 2",
+                color: this.host.colorPalette.getColor("Category 2").value,
+                //selectionId: undefined
+            },
+            {
+                name: "Category 3",
+                color: this.host.colorPalette.getColor("Category 3").value,
+                //selectionId: undefined
+            }
+        ])
 
         console.log('Visual update', options);
         if (this.textNode) {

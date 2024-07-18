@@ -27,57 +27,117 @@
 "use strict";
 
 import { formattingSettings } from "powerbi-visuals-utils-formattingmodel";
+import { ShapeChartCategory } from "./visual";
 
 import FormattingSettingsCard = formattingSettings.SimpleCard;
 import FormattingSettingsSlice = formattingSettings.Slice;
 import FormattingSettingsModel = formattingSettings.Model;
 
 /**
- * Data Point Formatting Card
+ * Shape Formatting Card
  */
-class DataPointCardSettings extends FormattingSettingsCard {
-    defaultColor = new formattingSettings.ColorPicker({
-        name: "defaultColor",
-        displayName: "Default color",
-        value: { value: "" }
+class ShapeCardSettings extends FormattingSettingsCard {
+    name: string = "shapes";
+    displayName: string = "Shapes";
+
+    borderColor = new formattingSettings.ColorPicker({
+        name: "borderColor",
+        displayName: "Border Colour",
+        value: { value: "#ffffff" }
     });
 
-    showAllDataPoints = new formattingSettings.ToggleSwitch({
-        name: "showAllDataPoints",
-        displayName: "Show all",
-        value: true
+    borderOpacity = new formattingSettings.Slider({
+        name: "maxColor",
+        displayName: "Border Opacity",
+        value: 100,
+        options: {
+            minValue: {
+                type: powerbi.visuals.ValidatorType.Min,
+                value: 0,
+            },
+            maxValue: {
+                type: powerbi.visuals.ValidatorType.Max,
+                value: 100,
+            },
+        }
     });
 
-    fill = new formattingSettings.ColorPicker({
-        name: "fill",
-        displayName: "Fill",
-        value: { value: "" }
+    borderWidth = new formattingSettings.NumUpDown({
+        name: "borderWidth",
+        displayName: "Border Width",
+        description: "The width of the border in pixels",
+        value: 2,
+        options: {
+            unitSymbol: "px",
+            unitSymbolAfterInput: false,
+        }
     });
 
-    fillRule = new formattingSettings.ColorPicker({
-        name: "fillRule",
-        displayName: "Color saturation",
-        value: { value: "" }
+    slices: Array<FormattingSettingsSlice> = [this.borderColor, this.borderOpacity, this.borderWidth];
+}
+
+/**
+ * ColorRamp Formatting Card
+ */
+class ColorRampCardSettings extends FormattingSettingsCard {
+    name: string = "colorRamp";
+    displayName: string = "Colour Ramp";
+
+    minColor = new formattingSettings.ColorPicker({
+        name: "minColor",
+        displayName: "Min Colour",
+        value: { value: "#deefff" }
     });
 
-    fontSize = new formattingSettings.NumUpDown({
-        name: "fontSize",
-        displayName: "Text Size",
-        value: 12
+    maxColor = new formattingSettings.ColorPicker({
+        name: "maxColor",
+        displayName: "Max Colour",
+        value: { value: "#118dff" }
     });
 
-    name: string = "dataPoint";
-    displayName: string = "Data colors";
-    slices: Array<FormattingSettingsSlice> = [this.defaultColor, this.showAllDataPoints, this.fill, this.fillRule, this.fontSize];
+    slices: Array<FormattingSettingsSlice> = [this.minColor, this.maxColor];
+}
+
+/**
+ * Legend Color Formatting Card
+ */
+class LegendColorCardSettings extends FormattingSettingsCard {
+    name: string = "legendColor";
+    displayName: string = "Category Colours";
+
+    // slices will be populated in `populateColorSelector` method
+    slices: Array<FormattingSettingsSlice> = [];
 }
 
 /**
 * visual settings model class
 *
 */
-export class VisualFormattingSettingsModel extends FormattingSettingsModel {
+export class ShapeChartSettingsModel extends FormattingSettingsModel {
     // Create formatting settings model formatting cards
-    dataPointCard = new DataPointCardSettings();
+    shapeCard = new ShapeCardSettings();
+    colorRampCard = new ColorRampCardSettings();
+    legendColorCard = new LegendColorCardSettings();
 
-    cards = [this.dataPointCard];
+    cards = [this.shapeCard, this.colorRampCard, this.legendColorCard];
+
+    /**
+     * populate colorSelector object categories formatting properties
+     * @param categories 
+     */
+    populateColorSelector(categories: ShapeChartCategory[]) {
+        const slices: FormattingSettingsSlice[] = this.legendColorCard.slices;
+        if (categories) {
+            categories.forEach(category => {
+                slices.push(new formattingSettings.ColorPicker({
+                    name: "fill",
+                    displayName: category.name,
+                    value: { value: category.color },
+                }));
+            });
+            this.legendColorCard.visible = true;
+        } else {
+            this.legendColorCard.visible = false;
+        }
+    }
 }

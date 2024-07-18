@@ -1,20 +1,28 @@
 {
     "dataRoles": [
         {
-            "displayName": "Category Data",
-            "name": "category",
-            "kind": "Grouping"
+            "displayName": "Polygon",
+            "name": "polygon_wkt",
+            "kind": "GroupingOrMeasure",
+            "description": "WKT of the shape to draw. Must be a POLYGON"
         },
         {
-            "displayName": "Measure Data",
-            "name": "measure",
-            "kind": "Measure"
+            "displayName": "Legend",
+            "name": "groups",
+            "kind": "GroupingOrMeasure",
+            "description": "Category to colour by (discrete)"
+        },
+        {
+            "displayName": "Value",
+            "name": "value",
+            "kind": "GroupingOrMeasure",
+            "description": "Value to colour by (continuous)"
         }
     ],
     "objects": {
-        "dataPoint": {
+        "shapes": {
             "properties": {
-                "defaultColor": {
+                "borderColor": {
                     "type": {
                         "fill": {
                             "solid": {
@@ -23,11 +31,42 @@
                         }
                     }
                 },
-                "showAllDataPoints": {
+                "borderOpacity": {
                     "type": {
-                        "bool": true
+                        "numeric": true
                     }
                 },
+                "borderWidth": {
+                    "type": {
+                        "numeric": true
+                    }
+                }
+            }
+        },
+        "colorRamp": {
+            "properties": {
+                "minColor": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                },
+                "maxColor": {
+                    "type": {
+                        "fill": {
+                            "solid": {
+                                "color": true
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "legendColor": {
+            "properties": {
                 "fill": {
                     "type": {
                         "fill": {
@@ -36,41 +75,46 @@
                             }
                         }
                     }
-                },
-                "fillRule": {
-                    "type": {
-                        "fill": {}
-                    }
-                },
-                 "fontSize": {
-                    "type": {
-                        "formatting": {
-                            "fontSize": true
-                        }
-                    }
                 }
             }
         }
     },
     "dataViewMappings": [
         {
+            "conditions": [
+                {
+                    "polygon_wkt": {
+                        "min": 1,
+                        "max": 1
+                    },
+                    "groups": {
+                        "max": 1
+                    },
+                    "value": {
+                        "max": 1
+                    }
+                }
+            ],
             "categorical": {
                 "categories": {
                     "for": {
-                        "in": "category"
+                        "in": "polygon_wkt"
                     },
                     "dataReductionAlgorithm": {
                         "top": {}
                     }
                 },
                 "values": {
-                    "select": [
-                        {
-                            "bind": {
-                                "to": "measure"
+                    "group": {
+                        "by": "groups",
+                        "select": [
+                            {
+                                "for": {
+                                    "in": "value"
+                                }
                             }
-                        }
-                    ]
+                        ]
+                    }
                 }
             }
         }
