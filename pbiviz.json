@@ -3,7 +3,7 @@
         "name": "shapevizual",
         "displayName": "shapevizual",
         "guid": "shapevizual80549DFDC37343A59DCDA2354364DB46",
-        "visualClassName": "Visual",
+        "visualClassName": "ShapeVisual",
         "version": "1.0.0.0",
         "description": "A demo visual showing how to create shapes",
         "supportUrl": "https://github.com/unique-pear486/shapeviz",

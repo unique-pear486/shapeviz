@@ -125,10 +125,10 @@ export class ShapeChartSettingsModel extends FormattingSettingsModel {
      * populate colorSelector object categories formatting properties
      * @param categories 
      */
-    populateColorSelector(categories: ShapeChartCategory[]) {
+    populateColorSelector(categories: {[name: string]: ShapeChartCategory}) {
         const slices: FormattingSettingsSlice[] = this.legendColorCard.slices;
-        if (categories) {
-            categories.forEach(category => {
+        if (categories && Object.keys(categories).length > 0) {
+            Object.values(categories).forEach(category => {
                 slices.push(new formattingSettings.ColorPicker({
                     name: "fill",
                     displayName: category.name,
