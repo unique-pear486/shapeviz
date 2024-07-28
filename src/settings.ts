@@ -136,8 +136,10 @@ export class ShapeChartSettingsModel extends FormattingSettingsModel {
                 }));
             });
             this.legendColorCard.visible = true;
+            this.colorRampCard.visible = false;
         } else {
             this.legendColorCard.visible = false;
+            this.colorRampCard.visible = true;
         }
     }
 }

@@ -26,7 +26,7 @@
 "use strict";
 
 import { BaseType, select as d3Select, Selection as d3Selection } from "d3-selection";
-import { scaleLinear, interpolateLab, ScaleLinear } from "d3";
+import { scaleLinear, interpolateLab, ScaleLinear, index } from "d3";
 
 import powerbi from "powerbi-visuals-api";
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
@@ -164,6 +164,7 @@ function visualTransform(dataView: DataView, host: IVisualHost, settings: ShapeC
     const categories = viewModel.categories;
     const grouped = dataView.categorical.values.grouped();
     const colorPalette = host.colorPalette;
+    const polygonValues = dataView.categorical.categories[0].values;
 
     // load the categories
     if (grouped.length == 1 && grouped[0].name == undefined) {
@@ -197,11 +198,28 @@ function visualTransform(dataView: DataView, host: IVisualHost, settings: ShapeC
         .interpolate(interpolateLab); // Why would you ever interpolate in RGB, you monster!
 
     // Load the shapes
-    const data = [{
-        polygon: "POLYGON((10 10, 20 10, 20 20, 10 20, 10 10))",
-        category: null,
-        value: 0.1,
-    }];
+    const data = [];
+    if (grouped.length == 1 && grouped[0].name == undefined) {
+        polygonValues.forEach((polygon, index) => {
+            data.push({
+                polygon: polygon.toString(),
+                category: null,
+                value: dataView.categorical.values.values[index],
+            });
+        });
+    } else {
+        grouped.forEach(group => {
+            group.values[0].values.forEach((value, index) => {
+                if (value != null) {
+                    data.push({
+                        polygon: polygonValues[index].toString(),
+                        category: group.name,
+                        value: value as number,
+                    })
+                }
+            });
+        });
+    }
 
     data.forEach(element => {
         let color: string;
