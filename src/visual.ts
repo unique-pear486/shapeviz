@@ -26,7 +26,7 @@
 "use strict";
 
 import { BaseType, select as d3Select, Selection as d3Selection } from "d3-selection";
-import { scaleLinear, interpolateLab } from "d3";
+import { scaleLinear, interpolateLab, ScaleLinear } from "d3";
 
 import powerbi from "powerbi-visuals-api";
 import { FormattingSettingsService } from "powerbi-visuals-utils-formattingmodel";
@@ -78,11 +78,8 @@ export interface ShapeChartShape {
     category: string;
     color: string;
     opacity: number;
-    strokeColor: string;
-    strokeWidth: number;
-    strokeOpacity: number;
     wkt: string;
-    selectionId: ISelectionId;
+    //selectionId: ISelectionId;
 }
 
 /**
@@ -99,6 +96,43 @@ export interface ShapeChartViewModel {
     dataMax: number;
     dataMin: number;
     categories: { [name: string]: ShapeChartCategory };
+}
+
+/**
+ * Function that converts wkt to an svg polygon
+ * 
+ * This is only a demo: Only POLYGONs are supported, without any extra spaces
+ * e.g. POLYGON((10 10, 20 10, 20 20, 10 20, 10 10))
+ *
+ * @function
+ * @param {string} dataView                             - the wkt to convert
+ * @param {ScaleLinear<number, number, never>} scaleX   - Contains references to the visual host.
+ * @param {ScaleLinear<number, number, never>} scaleY   - Reference to the settings for the visual (to update categories)
+ */
+function points_from_wkt(wkt: string, scaleX: ScaleLinear<number, number, never>, scaleY: ScaleLinear<number, number, never>): string {
+    // We blindly try to convert and return empty string if anything fails
+    try {
+        const output = [];
+        // Strip off the POLYGON(...)
+        const [, inner] = wkt.match(/^POLYGON\((.+)\)$/i);
+        // Separate out each linearRing
+        const rings = [...inner.matchAll(/\(([^)]+)\)/gi)];
+        rings.forEach(ringMatch => {
+            // pull out each pair of co-ordinates
+            const pairs = ringMatch[1].split(", ");
+            pairs.forEach(pair => {
+                // scale each pair of x,y
+                const [x, y] = pair.split(" ");
+                const xOut = scaleX(Number(x));
+                const yOut = scaleY(Number(y));
+                output.push([xOut, yOut].join(","));
+            })
+        })
+        // then finally, join our points with spaces
+        return output.join(" ")
+    } catch (e) {
+        return ""
+    }
 }
 
 /**
@@ -158,11 +192,33 @@ function visualTransform(dataView: DataView, host: IVisualHost, settings: ShapeC
     settings.populateColorSelector(categories)
 
     // Set the color scale in case we have no category colours
-    const scaleColor = scaleLinear([viewModel.dataMin, viewModel.dataMax], 
-                                 [settings.colorRampCard.minColor.value.value, settings.colorRampCard.maxColor.value.value])
+    const scaleColor = scaleLinear([viewModel.dataMin, viewModel.dataMax],
+        [settings.colorRampCard.minColor.value.value, settings.colorRampCard.maxColor.value.value])
         .interpolate(interpolateLab); // Why would you ever interpolate in RGB, you monster!
 
     // Load the shapes
+    const data = [{
+        polygon: "POLYGON((10 10, 20 10, 20 20, 10 20, 10 10))",
+        category: null,
+        value: 0.1,
+    }];
+
+    data.forEach(element => {
+        let color: string;
+        if (element.category == null) {
+            color = scaleColor(element.value);
+        } else {
+            color = categories[element.category].color;
+        }
+        viewModel.dataPoints.push({
+            value: element.value,
+            category: element.category,
+            color: color,
+            opacity: 1.0,
+            wkt: element.polygon,
+            //selectionId: ISelectionId,
+        })
+    });
 
     // Finally return the 
     return viewModel
@@ -188,6 +244,33 @@ export class ShapeVisual implements IVisual {
         this.formattingSettings = this.formattingSettingsService.populateFormattingSettingsModel(ShapeChartSettingsModel, options.dataViews[0]);
         this.dataView = visualTransform(options.dataViews[0], this.host, this.formattingSettings);
 
+        const width = options.viewport.width;
+        const height = options.viewport.height;
+
+        this.svg
+            .attr("width", width)
+            .attr("height", height);
+
+        const scaleX = scaleLinear()
+            .range([0, width])
+            .domain([0, 100])   // Fixed domain for demo purposes - should probably scale to input or add settings
+
+        const scaleY = scaleLinear()
+            .range([height, 0]) // svgs have 0 in top left not bottom left
+            .domain([0, 50])    // Fixed domain for demo purposes - should probably scale to input or add settings
+
+        this.svg.selectAll("polygon")
+            .data(this.dataView.dataPoints)
+            .join("polygon")
+            .attr("stroke", this.formattingSettings.shapeCard.borderColor.value.value)
+            .attr("stroke-width", this.formattingSettings.shapeCard.borderWidth.value)
+            .attr("stroke-opacity", this.formattingSettings.shapeCard.borderOpacity.value * 0.01)
+            .attr("points", function (d) {
+                return points_from_wkt(d.wkt, scaleX, scaleY);
+            })
+            .attr("fill", function (d) {
+                return d.color;
+            })
     }
 
     /**

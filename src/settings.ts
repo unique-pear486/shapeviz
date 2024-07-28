@@ -43,7 +43,7 @@ class ShapeCardSettings extends FormattingSettingsCard {
     borderColor = new formattingSettings.ColorPicker({
         name: "borderColor",
         displayName: "Border Colour",
-        value: { value: "#ffffff" }
+        value: { value: "#000000" }
     });
 
     borderOpacity = new formattingSettings.Slider({
