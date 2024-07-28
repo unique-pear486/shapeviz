@@ -133,6 +133,7 @@ export class ShapeChartSettingsModel extends FormattingSettingsModel {
                     name: "fill",
                     displayName: category.name,
                     value: { value: category.color },
+                    selector: category.selectionId.getSelector(),
                 }));
             });
             this.legendColorCard.visible = true;

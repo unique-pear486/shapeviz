@@ -177,8 +177,8 @@ function visualTransform(dataView: DataView, host: IVisualHost, settings: ShapeC
             const selectionId = host.createSelectionIdBuilder()
                 .withSeries(dataView.categorical.values, dataView.categorical.values[index])
                 .createSelectionId();
-            if (group.objects && group.objects.categoricalColor) {
-                color = (group.objects.categoricalColor.fill as any).solid.color;
+            if (group.objects && group.objects.legendColor) {
+                color = (group.objects.legendColor.fill as any).solid.color;
             } else {
                 color = colorPalette.getColor(name).value;
             }
@@ -204,7 +204,7 @@ function visualTransform(dataView: DataView, host: IVisualHost, settings: ShapeC
             data.push({
                 polygon: polygon.toString(),
                 category: null,
-                value: dataView.categorical.values.values[index],
+                value: dataView.categorical.values[0].values[index],
             });
         });
     } else {
